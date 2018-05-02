@@ -58,13 +58,15 @@ accounts = initialize()
 # get first friday of the year 
 # use this as first payday of the year (probably inaccurate across years)
 pay_day = datetime.date.today().replace(month=1, day=1)   
+
+# count up to next friday
 while pay_day.weekday() != 4:
     pay_day += datetime.timedelta(1)
+
 # count up to this month
-pay_day += datetime.timedelta(datetime.date.today().month-1)
-# count up to next friday
-while pay_day < datetime.date.today():
-    pay_day += datetime.timedelta(14)
+while(pay_day < datetime.date.today()):
+    pay_day+= datetime.timedelta(14)
+
 first_pay_day = pay_day
 
 iteration = 0
@@ -136,7 +138,7 @@ print()
 print('[... ', end='')
 
 # print waaaay ahead
-print((pay_day-first_pay_day).days/30, end='')
+print(round((pay_day-first_pay_day).days/30,1), end='')
 print(' months ahead ...]')
 print(pay_day, end='')
 for a in accounts:
