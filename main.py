@@ -125,10 +125,10 @@ for a in accounts:
         # if goal met
         if a.saving:
             if a.projection >= a.goal:
-                a.date = pay_day
+                a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
         else:
             if a.projection == 0:
-                a.date = pay_day
+                a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
 
     # get largest iteration from today
     if temp_iteration > largest_iteration:
@@ -138,9 +138,20 @@ print()
 print('[... ', end='')
 
 # print waaaay ahead
-print(round((pay_day-first_pay_day).days/30,1), end='')
-print(' months ahead ...]')
-print(pay_day, end='')
+future_date = (first_pay_day + datetime.timedelta(14*largest_iteration))
+months = (future_date - first_pay_day).days/30
+
+if months < 12:
+    print(months, end='')
+    print(' months ahead', end='')
+else:
+    print(round(months/12,1), end='')
+    print(' years ahead',end='')
+
+print(" ("+str(largest_iteration)+" paychecks)", end='')
+print(" ahead ...]")
+print(future_date, end='')
+
 for a in accounts:
     print(' | ', end=' ')
     print(a, end=' ')
