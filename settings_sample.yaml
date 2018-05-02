@@ -2,15 +2,15 @@ file : './file.gnucash'
 
 savings:
     accounts: 
-        - name: 'Assets:Current Assets:Savings Account'
-          goal: 0
-          budget: 200
+        # - name: 'Assets:Current Assets:Savings Account'
+        #   goal: 20000
+        #   budget: 200
         - name: 'Assets:Current Assets:Savings Account:Camper'
           goal: 10000
-          budget: 100
+          budget: 200
 
 debt:
     accounts: 
-        - name: 'Liabilities:Loans:Car Loan' 
+        - name: 'Liabilities:Loans:Codie Car Loan' 
           goal: 4000
-          budget: 500
+          budget: 350
