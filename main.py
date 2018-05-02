@@ -39,12 +39,13 @@ def initialize():
         return
     accounts = []
 
+    # for each savings account
     for a in budget_file['savings']['accounts']:
         accounts.append(account(
             name=a['name'], goal=a['goal'], budget=a['budget'], saving=True, 
             balance=book.accounts(fullname=a['name']).get_balance()))
         
-    
+    # for each debt accounts
     for a in budget_file['debt']['accounts']:
         accounts.append(account(
             name=a['name'], goal=a['goal'], budget=a['budget'], saving=False,
@@ -75,16 +76,19 @@ while pay_day.year <= datetime.date.today().year:
     # print pay day
     print(pay_day, end='')
 
+    # for each accout
     for a in accounts:
         print(' | ', end=' ')
         print(a, end=' ')
 
+        # increment amount
         amount = a.balance
         increment = a.budget*iteration* (1 if a.saving else -1)
         amount += increment
 
         amount = amount if amount > 0 else 0
 
+        # if set date if goal met
         if a.date is None:
             if a.saving:
                 if amount >= a.goal:
@@ -95,6 +99,7 @@ while pay_day.year <= datetime.date.today().year:
 
         a.projection = amount
 
+        # print account amount for this date
         print(str(amount).ljust(5), end='')
     print()
 
@@ -106,14 +111,16 @@ last_pay_day_of_year = pay_day + datetime.timedelta(-14)
 # year_iteration = iteration
 largest_iteration = iteration
 
+# if any account has not met goal
+# project until goal is met
 for a in accounts:
     temp_iteration = iteration
     while a.date is None:
 
         temp_iteration += 1    
-
         a.projection += a.budget*(1 if a.saving else -1)
 
+        # if goal met
         if a.saving:
             if a.projection >= a.goal:
                 a.date = pay_day
@@ -121,33 +128,33 @@ for a in accounts:
             if a.projection == 0:
                 a.date = pay_day
 
+    # get largest iteration from today
     if temp_iteration > largest_iteration:
         largest_iteration = temp_iteration
 
 print()
 print('[... ', end='')
 
+# print waaaay ahead
 print((pay_day-first_pay_day).days/30, end='')
 print(' months ahead ...]')
-
 print(pay_day, end='')
 for a in accounts:
     print(' | ', end=' ')
     print(a, end=' ')
 
     projection = a.balance + (a.budget * largest_iteration)*(1 if a.saving else -1)
-
     projection = projection if projection > 0 else 0
-
     print(projection, end='')
 
 print()
-
 print()
 
+# print today and future-most dates
 print(str(first_pay_day).rjust(30), end='')
 print("       "+ str(last_pay_day_of_year))
 
+# print account summaries
 for a in accounts:
     print(str(a).ljust(15), end=' ')
     print('(+)' if a.saving else '(-)', end='')
@@ -156,13 +163,17 @@ for a in accounts:
 
     print(" | ",end='')
     if a.saving and a.balance >= a.goal:
+        # unending goal
         if a.goal == 0:
             print()
+        # goal met with balance
         else:
             print("Goal already met.")
     else:
+        # unmet
         if a.date is None:
             print()
+        # goal met
         else:
             
             print(str(a.date)+" GOAL MET")
