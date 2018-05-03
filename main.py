@@ -2,6 +2,7 @@
 import os, piecash, yaml, time, datetime, math, sys, calendar
 from piecash import open_book, Transaction, Split, Account
 from pprint import pprint
+from io import StringIO
 
 # simple account class
 class account:
@@ -54,6 +55,11 @@ def initialize():
     return accounts
 
 accounts = initialize()
+
+# override standard out
+standard_out = sys.stdout
+result = StringIO()
+sys.stdout = result
 
 # get first friday of the year 
 # use this as first payday of the year (probably inaccurate across years)
@@ -160,21 +166,27 @@ for a in accounts:
     projection = projection if projection > 0 else 0
     print(projection, end='')
 
-print()
-print()
+# reset standard out
+sys.stdout = standard_out
 
 # print today and future-most dates
-print(str(first_pay_day).rjust(30), end='')
+print()
+print("       - End of Year Projections - \n")
+print(str(datetime.date.today()).rjust(33), end='')
 print("       "+ str(last_pay_day_of_year))
 
 # print account summaries
 for a in accounts:
     print(str(a).ljust(15), end=' ')
-    print('(+)' if a.saving else '(-)', end='')
+    print('(+' if a.saving else '(-', end='')
+    print(a.budget, end='')
+    print(")", end='')
     print(" Balance: " + str(a.balance).ljust(5), end='')
-    print(" | Projection: " + str(a.projection).ljust(5), end='')
 
-    print(" | ",end='')
+    end_of_year_balance = a.balance+a.budget*iteration* (1 if a.saving else -1)
+    end_of_year_balance = end_of_year_balance if end_of_year_balance > 0 else 0
+    print(" | Projection: " + str(end_of_year_balance).ljust(5), end='')
+
     if a.saving and a.balance >= a.goal:
         # unending goal
         if a.goal == 0:
@@ -182,13 +194,11 @@ for a in accounts:
         # goal met with balance
         else:
             print("Goal already met.")
-    else:
-        # unmet
-        if a.date is None:
-            print()
-        # goal met
-        else:
-            
-            print(str(a.date)+" GOAL MET")
 
+    print()
+
+# print breakdown (prior standard output)
+print()
+print("       - Breakdown - \n")
+print(result.getvalue())
 print()
