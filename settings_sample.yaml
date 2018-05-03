@@ -11,6 +11,6 @@ savings:
 
 debt:
     accounts: 
-        - name: 'Liabilities:Loans:Codie Car Loan' 
+        - name: 'Liabilities:Loans:Car Loan' 
           goal: 4000
           budget: 350
