@@ -175,6 +175,9 @@ print("       - End of Year Projections - \n")
 print(str(datetime.date.today()).rjust(33), end='')
 print("       "+ str(last_pay_day_of_year))
 
+net_start = 0
+net_end = 0
+
 # print account summaries
 for a in accounts:
     print(str(a).ljust(15), end=' ')
@@ -187,6 +190,9 @@ for a in accounts:
     end_of_year_balance = end_of_year_balance if end_of_year_balance > 0 else 0
     print(" | Projection: " + str(end_of_year_balance).ljust(5), end='')
 
+    net_start = net_start + a.balance if a.saving else net_start - a.balance
+    net_end = net_end + end_of_year_balance if a.saving else net_end - end_of_year_balance
+
     if a.saving and a.balance >= a.goal:
         # unending goal
         if a.goal == 0:
@@ -196,6 +202,11 @@ for a in accounts:
             print("Goal already met.")
 
     print()
+
+print(" ".ljust(27)+"Net: ",end='')
+print(net_start, end='  |')
+print(" ".ljust(8)+"Net: ",end='')
+print(net_end, end='')
 
 # print breakdown (prior standard output)
 print()
