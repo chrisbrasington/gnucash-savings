@@ -73,6 +73,11 @@ while pay_day.weekday() != 4:
 while(pay_day < datetime.date.today()):
     pay_day+= datetime.timedelta(14)
 
+# if pay_day is today, balances already affected
+#    so jump ahead to next payday
+if pay_day == datetime.date.today():
+    pay_day+= datetime.timedelta(14)
+
 first_pay_day = pay_day
 
 iteration = 0
