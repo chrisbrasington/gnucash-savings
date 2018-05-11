@@ -44,13 +44,13 @@ def initialize():
     for a in budget_file['savings']['accounts']:
         accounts.append(account(
             name=a['name'], goal=a['goal'], budget=a['budget'], saving=True, 
-            balance=book.accounts(fullname=a['name']).get_balance()))
+            balance=book.accounts(fullname=a['name']).get_balance(False)))
         
     # for each debt accounts
     for a in budget_file['debt']['accounts']:
         accounts.append(account(
             name=a['name'], goal=a['goal'], budget=a['budget'], saving=False,
-            balance=book.accounts(fullname=a['name']).get_balance()))
+            balance=book.accounts(fullname=a['name']).get_balance(False)))
 
     return accounts
 
