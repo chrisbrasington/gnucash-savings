@@ -14,6 +14,7 @@ class account:
         self.saving = saving 
         self.balance = math.floor(balance)
         self.date = None
+        self.iteration = 0
 
     # account summary printout 
     def __str__(self):
@@ -106,9 +107,11 @@ while pay_day.year <= datetime.date.today().year:
             if a.saving:
                 if amount >= a.goal:
                     a.date = pay_day
+                    a.iteration = iteration
             else:
                 if amount == 0:
                     a.date = pay_day
+                    a.iteration = iteration
 
         a.projection = amount
 
@@ -137,39 +140,38 @@ for a in accounts:
         if a.saving:
             if a.projection >= a.goal:
                 a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
+                a.iteration = temp_iteration
         else:
             if a.projection == 0:
                 a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
+                a.iteration = temp_iteration
 
     # get largest iteration from today
     if temp_iteration > largest_iteration:
         largest_iteration = temp_iteration
 
 print()
-print('[... ', end='')
+print("       - Goals Met - \n")
 
-# print waaaay ahead
-future_date = (first_pay_day + datetime.timedelta(14*largest_iteration))
-months = (future_date - first_pay_day).days/30
-
-if months < 12:
-    print(months, end='')
-    print(' months ahead', end='')
-else:
-    print(round(months/12,1), end='')
-    print(' years ahead',end='')
-
-print(" ("+str(largest_iteration)+" paychecks)", end='')
-print(" ahead ...]")
-print(future_date, end='')
-
+# print waaaay ahead per account
 for a in accounts:
-    print(' | ', end=' ')
-    print(a, end=' ')
-
-    projection = a.balance + (a.budget * largest_iteration)*(1 if a.saving else -1)
+    print(a.date, end=' | ')
+    print(str(a).ljust(16) , end=' ')
+    projection = a.balance + (a.budget * a.iteration)*(1 if a.saving else -1)
     projection = projection if projection > 0 else 0
-    print(projection, end='')
+    print(str(projection).ljust(5), end =' | ')
+
+    months = (a.date - first_pay_day).days/30
+
+    if months < 12:
+        print(round(months,1), end='')
+        print(' months ahead', end='')
+    else:
+        print(round(months/12,1), end='')
+        print(' years ahead',end='')
+
+    print(" ("+str(a.iteration)+" paychecks)", end='')
+    print(" ahead")
 
 # reset standard out
 sys.stdout = standard_out
