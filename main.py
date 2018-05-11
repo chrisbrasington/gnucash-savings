@@ -182,7 +182,7 @@ net_end = 0
 for a in accounts:
     print(str(a).ljust(15), end=' ')
     print('(+' if a.saving else '(-', end='')
-    print(a.budget, end='')
+    print(str(a.budget).ljust(3), end='')
     print(")", end='')
     print(" Balance: " + str(a.balance).ljust(5), end='')
 
