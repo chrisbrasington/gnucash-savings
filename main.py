@@ -7,14 +7,19 @@ from io import StringIO
 # simple account class
 class account:
 
-    def __init__(self,name, goal, budget, saving, balance):
+    def __init__(self,name, goal, budget, post_debt_budget, saving, balance):
         self.name = name
         self.goal = goal
         self.budget = budget
+        self.post_debt_budget = post_debt_budget
         self.saving = saving 
+        self.starting_balance = math.floor(balance)
+        self.end_of_year_balance = 0
         self.balance = math.floor(balance)
         self.date = None
         self.iteration = 0
+
+        self.goal_met = 0
 
     # account summary printout 
     def __str__(self):
@@ -44,16 +49,26 @@ def initialize():
     # for each savings account
     for a in budget_file['savings']['accounts']:
         accounts.append(account(
-            name=a['name'], goal=a['goal'], budget=a['budget'], saving=True, 
+            name=a['name'], goal=a['goal'], budget=a['budget'], 
+            post_debt_budget=a['budgetpostdebt'], saving=True, 
             balance=book.accounts(fullname=a['name']).get_balance(False)))
         
     # for each debt accounts
     for a in budget_file['debt']['accounts']:
         accounts.append(account(
-            name=a['name'], goal=a['goal'], budget=a['budget'], saving=False,
+            name=a['name'], goal=a['goal'], budget=a['budget'], 
+            post_debt_budget=0, saving=False,
             balance=book.accounts(fullname=a['name']).get_balance(False)))
 
     return accounts
+
+def is_post_debt(accounts):
+    for a in accounts:
+        if not a.saving:
+            if a.date is None:
+                return False
+    return True
+
 
 accounts = initialize()
 
@@ -83,7 +98,7 @@ first_pay_day = pay_day
 
 iteration = 0
 # for each friday for the rest of the year
-while pay_day.year <= datetime.date.today().year:
+while pay_day.year <= datetime.date.today().year+1:
     # increment iteration
     iteration += 1
 
@@ -97,7 +112,12 @@ while pay_day.year <= datetime.date.today().year:
 
         # increment amount
         amount = a.balance
-        increment = a.budget*iteration* (1 if a.saving else -1)
+
+        if a.saving:
+           increment = (a.post_debt_budget if is_post_debt(accounts) else a.budget)* (1 if a.saving else -1)
+        else:
+           increment = (a.budget)* (1 if a.saving else -1)
+
         amount += increment
 
         amount = amount if amount > 0 else 0
@@ -108,6 +128,7 @@ while pay_day.year <= datetime.date.today().year:
                 if amount >= a.goal:
                     a.date = pay_day
                     a.iteration = iteration
+                    a.goal_met = amount
             else:
                 if amount == 0:
                     a.date = pay_day
@@ -115,14 +136,23 @@ while pay_day.year <= datetime.date.today().year:
 
         a.projection = amount
 
+        a.balance = amount
+
+        if(pay_day.year == datetime.date.today().year):
+            last_pay_day_of_year = pay_day + datetime.timedelta(-14)
+            a.end_of_year_balance = amount
+
         # print account amount for this date
         print(str(amount).ljust(5), end='')
+        if amount > 0:
+            print(' (' + ('+' if a.saving else '-'), end='')
+            print((str(increment)+')').ljust(4), end='')
     print()
 
     # increment pay day
     pay_day += datetime.timedelta(14)
 
-last_pay_day_of_year = pay_day + datetime.timedelta(-14)
+
 
 # year_iteration = iteration
 largest_iteration = iteration
@@ -134,21 +164,26 @@ for a in accounts:
     while a.date is None:
 
         temp_iteration += 1    
-        a.projection += a.budget*(1 if a.saving else -1)
+        a.projection += (a.post_debt_budget if is_post_debt(accounts) else a.budget)*(1 if a.saving else -1)
 
         # if goal met
         if a.saving:
             if a.projection >= a.goal:
                 a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
                 a.iteration = temp_iteration
+                a.goal_met = a.projection
         else:
             if a.projection == 0:
                 a.date = pay_day  + datetime.timedelta(14*(temp_iteration-iteration))
                 a.iteration = temp_iteration
+                a.goal_met = a.projection
+
+        a.balance = a.projection
 
     # get largest iteration from today
     if temp_iteration > largest_iteration:
         largest_iteration = temp_iteration
+
 
 print()
 print("       - Goals Met - \n")
@@ -157,9 +192,7 @@ print("       - Goals Met - \n")
 for a in accounts:
     print(a.date, end=' | ')
     print(str(a).ljust(16) , end=' ')
-    projection = a.balance + (a.budget * a.iteration)*(1 if a.saving else -1)
-    projection = projection if projection > 0 else 0
-    print(str(projection).ljust(5), end =' | ')
+    print(str(a.goal_met).ljust(5), end =' | ')
 
     months = (a.date - first_pay_day).days/30
 
@@ -191,24 +224,28 @@ for a in accounts:
     print('(+' if a.saving else '(-', end='')
     print(str(a.budget).ljust(3), end='')
     print(")", end='')
-    print(" Balance: " + str(a.balance).ljust(5), end='')
+    print(" Balance: " + str(a.starting_balance).ljust(5), end='')
 
-    end_of_year_balance = a.balance+a.budget*iteration* (1 if a.saving else -1)
-    end_of_year_balance = end_of_year_balance if end_of_year_balance > 0 else 0
-    print(" | Projection: " + str(end_of_year_balance).ljust(5), end='')
+    # end_of_year_balance = a.balance+a.budget*iteration* (1 if a.saving else -1)
+    # end_of_year_balance = end_of_year_balance if end_of_year_balance > 0 else 0
+    print(" | Projection: " + str(a.end_of_year_balance).ljust(5), end='')
 
-    net_start = net_start + a.balance if a.saving else net_start - a.balance
-    net_end = net_end + end_of_year_balance if a.saving else net_end - end_of_year_balance
+    # net_start = net_start + a.balance if a.saving else net_start - a.balance
+    # net_end = net_end + end_of_year_balance if a.saving else net_end - end_of_year_balance
 
-    if a.saving and a.balance >= a.goal:
+    net_start += a.starting_balance * (1 if a.saving else -1)
+    net_end += a.end_of_year_balance * (1 if a.saving else -1)
+
+    if a.saving and a.end_of_year_balance >= a.goal:
         # unending goal
         if a.goal == 0:
             print()
         # goal met with balance
         else:
-            print("Goal already met.")
+            print(" Goal already met.", end='')
 
     print()
+
 
 print(" ".ljust(27)+"Net: ",end='')
 print(net_start, end='  |')

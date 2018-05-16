@@ -8,6 +8,7 @@ savings:
         - name: 'Assets:Current Assets:Savings Account:Camper'
           goal: 10000
           budget: 200
+          budgetpostdebt: 400
 
 debt:
     accounts: 
