@@ -54,11 +54,12 @@ def initialize():
             balance=book.accounts(fullname=a['name']).get_balance(False)))
         
     # for each debt accounts
-    for a in budget_file['debt']['accounts']:
-        accounts.append(account(
-            name=a['name'], goal=a['goal'], budget=a['budget'], 
-            post_debt_budget=0, saving=False,
-            balance=book.accounts(fullname=a['name']).get_balance(False)))
+    if 'debt' in budget_file:
+        for a in budget_file['debt']['accounts']:
+            accounts.append(account(
+                name=a['name'], goal=a['goal'], budget=a['budget'], 
+                post_debt_budget=0, saving=False,
+                balance=book.accounts(fullname=a['name']).get_balance(False)))
 
     return accounts
 
@@ -191,7 +192,7 @@ print("       - Goals Met - \n")
 # print waaaay ahead per account
 for a in accounts:
     print(a.date, end=' | ')
-    print(str(a).ljust(16) , end=' ')
+    print(str(a).ljust(18) , end=' ')
     print(str(a.goal_met).ljust(5), end =' | ')
 
     months = (a.date - first_pay_day).days/30
@@ -212,7 +213,7 @@ sys.stdout = standard_out
 # print today and future-most dates
 print()
 print("       - End of Year Projections - \n")
-print(str(datetime.date.today()).rjust(33), end='')
+print(str(datetime.date.today()).rjust(36), end='')
 print("       "+ str(last_pay_day_of_year))
 
 net_start = 0
@@ -220,7 +221,7 @@ net_end = 0
 
 # print account summaries
 for a in accounts:
-    print(str(a).ljust(15), end=' ')
+    print(str(a).ljust(18), end=' ')
     print('(+' if a.saving else '(-', end='')
     print(str(a.budget).ljust(3), end='')
     print(")", end='')
@@ -229,12 +230,6 @@ for a in accounts:
     # end_of_year_balance = a.balance+a.budget*iteration* (1 if a.saving else -1)
     # end_of_year_balance = end_of_year_balance if end_of_year_balance > 0 else 0
     print(" | Projection: " + str(a.end_of_year_balance).ljust(5), end='')
-
-    # net_start = net_start + a.balance if a.saving else net_start - a.balance
-    # net_end = net_end + end_of_year_balance if a.saving else net_end - end_of_year_balance
-
-    net_start += a.starting_balance * (1 if a.saving else -1)
-    net_end += a.end_of_year_balance * (1 if a.saving else -1)
 
     if a.saving and a.end_of_year_balance >= a.goal:
         # unending goal
@@ -247,10 +242,10 @@ for a in accounts:
     print()
 
 
-print(" ".ljust(27)+"Net: ",end='')
-print(net_start, end='  |')
-print(" ".ljust(8)+"Net: ",end='')
-print(net_end, end='')
+#print(" ".ljust(30)+"Net: ",end='')
+#print(net_start, end='  |')
+#print(" ".ljust(8)+"Net: ",end='')
+#print(net_end, end='')
 
 # print breakdown (prior standard output)
 print()
